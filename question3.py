@@ -1,6 +1,16 @@
 
 
 import turtle
+def main():
+    #Ask for user input
+    left_angle = float(input("Enter left branch angle: "))
+    right_angle = float(input("Enter right branch angle: "))
+    branch_length = float(input("Enter starting branch length: "))
+    depth = int(input("Enter recursion depth: "))
+    reduction_factor = float(input("Enter branch length reduction factor: "))
+
+    #Call the draw_tree function with user inputs
+    draw_tree(branch_length, left_angle, right_angle, depth, reduction_factor)
 
 def draw_branch(t, branch_length, left_angle, right_angle, depth, reduction_factor):
     if depth == 0:
@@ -25,13 +35,7 @@ def draw_branch(t, branch_length, left_angle, right_angle, depth, reduction_fact
     t.backward(branch_length)
 
 def draw_tree(branch_length=100, left_angle=20, right_angle=25, depth=5, reduction_factor=0.7):
-    # Get user inputs
-    # left_angle = float(input("Enter left branch angle: "))
-    # right_angle = float(input("Enter right branch angle: "))
-    # branch_length = float(input("Enter starting branch length: "))
-    # depth = int(input("Enter recursion depth: "))
-    # reduction_factor = float(input("Enter branch length reduction factor: "))
-    
+ 
     # Initialize turtle
     screen = turtle.Screen()
     screen.bgcolor("white")
@@ -48,4 +52,4 @@ def draw_tree(branch_length=100, left_angle=20, right_angle=25, depth=5, reducti
     screen.mainloop()
 
 if __name__ == "__main__":
-    draw_tree()
+    main()
