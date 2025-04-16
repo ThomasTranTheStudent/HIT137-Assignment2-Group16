@@ -1,14 +1,13 @@
-# Import all Python librarieslibraries
+# Import all Python libraries
 import csv
 import os
 
 # Folder containing data
-directory = "C:/Users/khuep/Downloads/YEN/UNITS/HIT137/Assignment 2/HIT137 Assignment 2 S1 2025/temperature_data"
+directory = "./temperature_data"
 temperature_data = []
 
 # Month list
-months = ["January", "February", "March", "April", "May", "June",
-          "July", "August", "September", "October", "November", "December"]
+months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
 # Read CSV file in directory
 for filename in sorted(os.listdir(directory)):
@@ -35,10 +34,10 @@ for filename in sorted(os.listdir(directory)):
 
 def avg():
     seasons = {
+        "Spring": ["September", "October", "November"],
         "Summer": ["December", "January", "February"],
         "Autumn": ["March", "April", "May"],
-        "Winter": ["June", "July", "August"],
-        "Spring": ["September", "October", "November"]
+        "Winter": ["June", "July", "August"]
     }
 
     seasons_data = {season: {"sum": 0, "count": 0} for season in seasons}
