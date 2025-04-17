@@ -2,37 +2,56 @@
 import csv
 import os
 
-# Folder containing data
-directory = "./temperature_data"
-temperature_data = []
+def main():
+    # Load temperature data
+    directory = "./temperature_data"
+    temperature_data = load_temperature_data(directory)
 
-# Month list
-months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    # Call the avg function
+    avg(temperature_data)
 
-# Read CSV file in directory
-for filename in sorted(os.listdir(directory)):
-    if filename.endswith(".csv"):
-        file_path = os.path.join(directory, filename)
-        with open(file_path, mode='r') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                temps = {}
-                for month in months:
-                    if month in row and row[month].strip() != "":
-                        try:
-                            temps[month] = float(row[month])
-                        except ValueError:
-                            continue
-                if "STATION_NAME" in row:
-                    station_name = row["STATION_NAME"]
-                    station_data = {
-                        "Station_Name": station_name,
-                        "Temperatures": temps
-                    }
-                    temperature_data.append(station_data)
+def load_temperature_data(directory):
+    # Folder containing data
+    temperature_data = []
+
+    # Month list
+    months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+
+    # Check if directory exists
+    if not os.path.exists(directory):
+        print(f"Error: Directory '{directory}' does not exist.")
+        return temperature_data
+
+    # Read CSV file in directory
+    for filename in sorted(os.listdir(directory)):
+        if filename.endswith(".csv"):
+            file_path = os.path.join(directory, filename)
+            try:
+                with open(file_path, mode='r') as csvfile:
+                    reader = csv.DictReader(csvfile)
+                    for row in reader:
+                        temps = {}
+                        for month in months:
+                            if month in row and row[month].strip() != "":
+                                try:
+                                    temps[month] = float(row[month])
+                                except ValueError:
+                                    print(f"Warning: Invalid temperature value in file '{filename}', skipping.")
+                                    continue
+                        if "STATION_NAME" in row:
+                            station_name = row["STATION_NAME"]
+                            station_data = {
+                                "Station_Name": station_name,
+                                "Temperatures": temps
+                            }
+                            temperature_data.append(station_data)
+            except Exception as e:
+                print(f"Error: Could not read file '{filename}'. {e}")
+    return temperature_data
 
 
-def avg():
+
+def avg(temperature_data):
     seasons = {
         "Spring": ["September", "October", "November"],
         "Summer": ["December", "January", "February"],
@@ -68,4 +87,4 @@ def avg():
 
 # Call the avg function
 if __name__ == "__main__":
-    avg()
+    main()
