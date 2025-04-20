@@ -1,4 +1,7 @@
 def shift_char(c, shift, direction):
+    """
+    Shift a character forward or backward in the alphabet.
+    """
     if not c.isalpha():
         return c
 
@@ -8,7 +11,14 @@ def shift_char(c, shift, direction):
 
 
 def encrypt_text(text, n, m):
+    """
+    Encrypt text using custom shifting rules based on character case and value.
+    """
     encrypted = []
+    # Encrypt the text based on the rules provided
+    # Lowercase letters: shift by n * m if <= 'm', else shift by n + m
+    # Uppercase letters: shift by n if <= 'M', else shift by m * m
+    # Non-alphabetic characters remain unchanged
     for c in text:
         if c.islower():
             if c <= 'm':
@@ -26,6 +36,9 @@ def encrypt_text(text, n, m):
 
 
 def decrypt_text(encrypted, n, m, original_text):
+    """
+    Decrypt text using original text as a guide to reverse the encryption.
+    """
     decrypted = []
     for i, c in enumerate(encrypted):
         if i >= len(original_text):
@@ -35,6 +48,7 @@ def decrypt_text(encrypted, n, m, original_text):
         original_char = original_text[i]
         if original_char.islower():
             if original_char <= 'm':
+                # Shift back using the same logic as encryption
                 decrypted.append(shift_char(c, n * m, 'backward'))
             else:
                 decrypted.append(shift_char(c, n + m, 'forward'))
@@ -49,30 +63,40 @@ def decrypt_text(encrypted, n, m, original_text):
 
 
 def check_correctness(original, decrypted):
+    """
+    Check if decrypted text matches the original.
+    """
     return original == decrypted
 
 
 def main():
+    """
+    Run the encryption/decryption process with file I/O.
+    """
     n = int(input("Enter n: "))
     m = int(input("Enter m: "))
 
+    # Read raw text
     with open('raw_text.txt', 'r', encoding='utf-8') as f:
         raw_text = f.read()
 
+    # Encrypt
     encrypted = encrypt_text(raw_text, n, m)
     with open('encrypted_text.txt', 'w', encoding='utf-8') as f:
         f.write(encrypted)
-    print("✅ Encryption done!")
+    print("Encryption done!")
 
+    # Decrypt 
     decrypted = decrypt_text(encrypted, n, m, raw_text)
     with open('decrypted_text.txt', 'w', encoding='utf-8') as f:
         f.write(decrypted)
-    print("✅ Decryption done!")
+    print("Decryption done!")
 
+    # Check correctness by comparing original and decrypted text
     if check_correctness(raw_text, decrypted):
-        print("✅ Original and decrypted text match!")
+        print("Original and decrypted text match!")
     else:
-        print("❌ Decryption failed!")
+        print("Decryption failed!")
 
 
 if __name__ == '__main__':
