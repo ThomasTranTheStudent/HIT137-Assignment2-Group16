@@ -57,32 +57,41 @@ def calculate_seasonal_averages(df):
 
     return seasonal_averages
 
-def find_largest_temperature_range_stations(df):
+def find_largest_temperature_range_station(df):
     """
-    Find station(s) with the largest temperature range (max - min) across all years.
+    Find the station and year with the largest temperature range (max - min)
+    based on each station's data for each individual year.
     """
     station_max_ranges = []
 
     # Loop through each unique station
     for station in df['STATION_NAME'].unique():
-        # Filter data for this station
         station_data = df[df['STATION_NAME'] == station]
 
-        # Get all monthly temperatures for this station
-        all_temps = station_data[MONTHS].values.flatten()
+        # Loop through each year for that station
+        for year in station_data['YEAR'].unique():
+            year_data = station_data[station_data['YEAR'] == year]
 
-        # Calculate max and min temperature, then the range
-        max_temp = np.max(all_temps)
-        min_temp = np.min(all_temps)
-        temp_range = max_temp - min_temp
+            # Get all temperatures for that year (flatten to handle any multi-row case)
+            all_temps = year_data[MONTHS].values.flatten()
+            all_temps = all_temps[~np.isnan(all_temps)]  # Remove NaNs if any
 
-        # Store the results
-        station_max_ranges.append({
-            'STATION_NAME': station,
-            'MAX_TEMP': max_temp,
-            'MIN_TEMP': min_temp,
-            'TEMP_RANGE': temp_range
-        })
+            if len(all_temps) == 0:
+                continue  # Skip empty data
+
+            # Calculate max and min temperature, then the range
+            max_temp = np.max(all_temps)
+            min_temp = np.min(all_temps)
+            temp_range = max_temp - min_temp
+
+            # Store the results
+            station_max_ranges.append({
+                'STATION_NAME': station,
+                'YEAR': year,
+                'MAX_TEMP': max_temp,
+                'MIN_TEMP': min_temp,
+                'TEMP_RANGE': temp_range
+            })
 
     # Create a DataFrame of station temperature ranges
     station_ranges_df = pd.DataFrame(station_max_ranges)
@@ -91,30 +100,39 @@ def find_largest_temperature_range_stations(df):
     max_range = station_ranges_df['TEMP_RANGE'].max()
 
     # Filter and return only stations with the maximum range
-    largest_range_stations = station_ranges_df[station_ranges_df['TEMP_RANGE'] == max_range][
-        ['STATION_NAME', 'MAX_TEMP', 'MIN_TEMP', 'TEMP_RANGE']]
+    largest_range_station = station_ranges_df[station_ranges_df['TEMP_RANGE'] == max_range][
+        ['STATION_NAME', 'YEAR', 'MAX_TEMP', 'MIN_TEMP', 'TEMP_RANGE']]
 
-    return largest_range_stations
+    return largest_range_station
 
 def find_warmest_and_coolest_stations(df):
     """
-    Find the warmest and coolest stations based on their annual average temperature.
+    Find the warmest and coolest stations by comparing their annual average temperature.
     """
     station_avgs = []
 
     # Loop through each station
     for station in df['STATION_NAME'].unique():
-        # Filter data for the station
         station_data = df[df['STATION_NAME'] == station]
 
-        # Calculate the average of all 12 months
-        avg_temp = np.mean(station_data[MONTHS].values.flatten())
+        for year in station_data['YEAR'].unique():
+            year_data = station_data[station_data['YEAR'] == year]
 
-        # Store station and its average temperature
-        station_avgs.append({
-            'STATION_NAME': station,
-            'ANNUAL_AVG': avg_temp
-        })
+            # Flatten all monthly values and ignore NaNs
+            temps = year_data[MONTHS].values.flatten()
+            temps = temps[~np.isnan(temps)]
+
+            if len(temps) == 0:
+                continue  # Skip if no temperature data for this year
+
+            avg_temp = np.mean(temps)
+
+            #Store the results
+            station_avgs.append({
+                'STATION_NAME': station,
+                'YEAR': year,
+                'ANNUAL_AVG': avg_temp
+            })
 
     # Create DataFrame of annual averages
     station_avgs_df = pd.DataFrame(station_avgs)
@@ -140,22 +158,22 @@ def save_results(seasonal_averages, largest_range_stations, warmest_stations, co
         for season, avg in seasonal_averages.items():
             f.write(f"{season}: {avg:.2f} °C\n")
 
-    # Write largest temperature range station(s) to a file
-    with open('largest_temp_range_stations.txt', 'w') as f:
-        f.write("Stations with the largest temperature range:\n")
+    # Write largest temperature range station to a file
+    with open('largest_temp_range_station.txt', 'w') as f:
+        f.write("Station with the largest temperature range:\n")
         for _, row in largest_range_stations.iterrows():
-            f.write(f"{row['STATION_NAME']}: {row['TEMP_RANGE']:.2f} °C\n")
+            f.write(f"{row['STATION_NAME']} ({row['YEAR']}): {row['TEMP_RANGE']:.2f} °C\n")
             f.write(f"(Max: {row['MAX_TEMP']:.2f} °C, Min: {row['MIN_TEMP']:.2f} °C)\n")
 
     # Write warmest and coolest stations to a file
     with open('warmest_and_coolest_station.txt', 'w') as f:
         f.write("Warmest Station(s):\n")
         for _, row in warmest_stations.iterrows():
-            f.write(f"{row['STATION_NAME']}: {row['ANNUAL_AVG']:.2f} °C\n")
+            f.write(f"{row['STATION_NAME']} ({row['YEAR']}): {row['ANNUAL_AVG']:.2f} °C\n")
 
         f.write("\nCoolest Station(s):\n")
         for _, row in coolest_stations.iterrows():
-            f.write(f"{row['STATION_NAME']}: {row['ANNUAL_AVG']:.2f} °C\n")
+            f.write(f"{row['STATION_NAME']} ({row['YEAR']}): {row['ANNUAL_AVG']:.2f} °C\n")
 
 def main():
     """
@@ -169,7 +187,7 @@ def main():
         seasonal_avgs = calculate_seasonal_averages(data)
 
         # Find station(s) with the largest temperature range
-        largest_range = find_largest_temperature_range_stations(data)
+        largest_range = find_largest_temperature_range_station(data)
 
         # Find warmest and coolest stations
         warmest, coolest = find_warmest_and_coolest_stations(data)
